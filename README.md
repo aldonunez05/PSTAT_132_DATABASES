@@ -1,1 +1,1 @@
-#PSTAT_132_DATABASES
+PSTAT 132 - Databases @ UCSB
