@@ -1,0 +1,28 @@
+---
+title: "PSTAT 132 - Homework 2"
+author: "Aldo Nunez"
+date: "2026-10-14"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Question 1 
+
+Relational algebra:
+
+$\pi\_CourseID$($\sigma\_StudentID='1001'(ENROLLMENT)$) 
+$\\$
+$\pi\_CourseID$($\sigma\_StudentID='1002'(ENROLLMENT)$)
+
+$\\$
+SQL:
+$\\$
+
+SELECT CourseID FROM ENROLLMENT WHERE STUDENT ID = '1001'
+$\\$
+EXCEPT
+$\\$
+SELECT CourseID FROM ENROLLMENT WHERE STUDENT ID = '1002'
