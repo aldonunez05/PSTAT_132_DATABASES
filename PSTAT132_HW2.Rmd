@@ -9,20 +9,124 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Question 1 
+**Question 1** 
 
 Relational algebra:
-
-$\pi\_CourseID$($\sigma\_StudentID='1001'(ENROLLMENT)$) 
 $\\$
-$\pi\_CourseID$($\sigma\_StudentID='1002'(ENROLLMENT)$)
+$\pi_{\text{CourseID}}\left(\sigma_{\text{StudentID}='1001'}(\text{ENROLLMENT})\right) - \pi_{\text{CourseID}}\left(\sigma_{\text{StudentID}='1002'}(\text{ENROLLMENT})\right)$
 
-$\\$
 SQL:
-$\\$
 
 SELECT CourseID FROM ENROLLMENT WHERE STUDENT ID = '1001'
 $\\$
 EXCEPT
 $\\$
 SELECT CourseID FROM ENROLLMENT WHERE STUDENT ID = '1002'
+
+
+**Question 2** 
+
+Relational algebra:
+
+$\pi_{\text{Name},\,\text{Title}}\left(\sigma_{\text{Grade}='A'}\left(\text{STUDENT} \bowtie \text{ENROLLMENT} \bowtie \text{COURSE}\right)\right)$
+
+SQL:
+
+SELECT S.Name, C.Title
+$\\$
+FROM STUDENT S
+$\\$
+JOIN ENROLLMENT E ON S.StudentID = E.StudentID
+$\\$
+JOIN COURSE C ON E.CourseID = C.COURSEID
+$\\$
+WHERE E.Grade = 'A';
+$\\$
+
+**Question 3**
+
+Relational algebra:
+$\\$
+$\pi_{\text{Name},\,\text{Title}}\left(\text{STUDENT} \bowtie \text{ENROLLMENT} \bowtie \text{COURSE}\right)$
+
+SQL:
+
+SELECT S.Name, C.Title
+$\\$
+FROM STUDENT S
+$\\$
+JOIN ENROLLMENT E ON S.StudentID = E.StudentID
+$\\$
+JOIN COURSE C ON E.CourseID = C.COURSEID
+$\\$
+
+**Question 5**
+
+sql_query_5 <- "WITH customer_totals AS (
+    SELECT
+        customer_id,
+        SUM(order_amount) AS total_spend
+    FROM orders
+    WHERE order_date >= '2023-01-01'
+      AND order_date <  '2023-02-01'
+    GROUP BY customer_id
+),
+avg_spend AS (
+    SELECT AVG(total_spend) AS avg_total_spend
+    FROM customer_totals
+)
+SELECT
+    ct.customer_id,
+    ct.total_spend,
+    a.avg_total_spend,
+    ct.total_spend - a.avg_total_spend AS diff_from_avg,
+    CASE
+        WHEN ct.total_spend > a.avg_total_spend THEN 'Above average'
+        WHEN ct.total_spend < a.avg_total_spend THEN 'Below average'
+        ELSE 'Equal to average'
+    END AS comparison
+FROM customer_totals ct
+CROSS JOIN avg_spend a
+ORDER BY ct.total_spend DESC;"
+
+**Question 6**
+sql_query_6 <- "CREATE VIEW customer_monthly_spend AS
+SELECT
+    customer_id,
+    strftime('%Y-%m', order_date) AS order_month,
+    SUM(order_amount) AS total_spend
+FROM orders
+GROUP BY customer_id, strftime('%Y-%m', order_date);"
+
+**Question 7**
+Two intermediate relations: (a) each customer’s total spend for January 2023 (filter by date, GROUP BY customer_id, SUM(order_amount)), and (b) the average of those totals.
+
+The CTE names the per-customer January totals once at the top of the query. The main query can then read from it twice: once to list customers and once to compute the average to compare against. Each logical step is separate and readable.
+Repeating the aggregation in two nested subqueries duplicates logic. That is harder to read, and if one copy is edited (e.g., the date range), the two copies can silently drift apart. The CTE is a single source of truth.
+No. A CTE is temporary and exists only while that one query executes. Nothing is saved, which is why SELECT * FROM january_completed_orders fails in Demo 3.
+
+No. A view adds a permanent schema object, which pays off when logic is reused across many queries or sessions. For a one-off or occasional analysis, a CTE is simpler and leaves nothing behind to maintain.
+
+**Question 8**
+
+sql_query_8 <- "WITH student_avg AS (
+    SELECT
+        StudentID,
+        AVG(Grade) AS average_grade
+    FROM ENROLLMENT
+    GROUP BY StudentID
+    HAVING AVG(Grade) >= 85
+)
+SELECT
+    s.StudentID,
+    s.Name,
+    s.Major,
+    sa.average_grade
+FROM student_avg sa
+JOIN STUDENT s
+  ON s.StudentID = sa.StudentID
+ORDER BY sa.average_grade DESC;"
+
+
+
+The CTE separates the aggregation and filtering step (average grade, keep only ≥ 85) from the join to STUDENT. The query reads in the same order as the problem’s steps. The join also only touches the already-reduced set of successful students instead of mixing GROUP BY/HAVING with the join logic.

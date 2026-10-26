@@ -1,0 +1,162 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  pdftitle={PSTAT 132 - Homework 2},
+  pdfauthor={Aldo Nunez},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{PSTAT 132 - Homework 2}
+\author{Aldo Nunez}
+\date{2026-10-14}
+
+\begin{document}
+\maketitle
+
+\textbf{Question 1}
+
+Relational algebra: \(\\\)
+\(\pi_{\text{CourseID}}\left(\sigma_{\text{StudentID}='1001'}(\text{ENROLLMENT})\right) - \pi_{\text{CourseID}}\left(\sigma_{\text{StudentID}='1002'}(\text{ENROLLMENT})\right)\)
+
+SQL:
+
+SELECT CourseID FROM ENROLLMENT WHERE STUDENT ID = `1001' \(\\\) EXCEPT
+\(\\\) SELECT CourseID FROM ENROLLMENT WHERE STUDENT ID = `1002'
+
+\textbf{Question 2}
+
+Relational algebra:
+
+\(\pi_{\text{Name},\,\text{Title}}\left(\sigma_{\text{Grade}='A'}\left(\text{STUDENT} \bowtie \text{ENROLLMENT} \bowtie \text{COURSE}\right)\right)\)
+
+SQL:
+
+SELECT S.Name, C.Title \(\\\) FROM STUDENT S \(\\\) JOIN ENROLLMENT E ON
+S.StudentID = E.StudentID \(\\\) JOIN COURSE C ON E.CourseID =
+C.COURSEID \(\\\) WHERE E.Grade = `A'; \(\\\)
+
+\textbf{Question 3}
+
+Relational algebra: \(\\\)
+\(\pi_{\text{Name},\,\text{Title}}\left(\text{STUDENT} \bowtie \text{ENROLLMENT} \bowtie \text{COURSE}\right)\)
+
+SQL:
+
+SELECT S.Name, C.Title \(\\\) FROM STUDENT S \(\\\) JOIN ENROLLMENT E ON
+S.StudentID = E.StudentID \(\\\) JOIN COURSE C ON E.CourseID =
+C.COURSEID \(\\\)
+
+\textbf{Question 5}
+
+sql\_query\_5 \textless- ``WITH customer\_totals AS ( SELECT
+customer\_id, SUM(order\_amount) AS total\_spend FROM orders WHERE
+order\_date \textgreater= `2023-01-01' AND order\_date \textless{}
+`2023-02-01' GROUP BY customer\_id ), avg\_spend AS ( SELECT
+AVG(total\_spend) AS avg\_total\_spend FROM customer\_totals ) SELECT
+ct.customer\_id, ct.total\_spend, a.avg\_total\_spend, ct.total\_spend -
+a.avg\_total\_spend AS diff\_from\_avg, CASE WHEN ct.total\_spend
+\textgreater{} a.avg\_total\_spend THEN `Above average' WHEN
+ct.total\_spend \textless{} a.avg\_total\_spend THEN `Below average'
+ELSE `Equal to average' END AS comparison FROM customer\_totals ct CROSS
+JOIN avg\_spend a ORDER BY ct.total\_spend DESC;''
+
+\textbf{Question 6} sql\_query\_6 \textless- ``CREATE VIEW
+customer\_monthly\_spend AS SELECT customer\_id, strftime(`\%Y-\%m',
+order\_date) AS order\_month, SUM(order\_amount) AS total\_spend FROM
+orders GROUP BY customer\_id, strftime(`\%Y-\%m', order\_date);''
+
+\textbf{Question 7} Two intermediate relations: (a) each customer's
+total spend for January 2023 (filter by date, GROUP BY customer\_id,
+SUM(order\_amount)), and (b) the average of those totals.
+
+The CTE names the per-customer January totals once at the top of the
+query. The main query can then read from it twice: once to list
+customers and once to compute the average to compare against. Each
+logical step is separate and readable. Repeating the aggregation in two
+nested subqueries duplicates logic. That is harder to read, and if one
+copy is edited (e.g., the date range), the two copies can silently drift
+apart. The CTE is a single source of truth. No.~A CTE is temporary and
+exists only while that one query executes. Nothing is saved, which is
+why SELECT * FROM january\_completed\_orders fails in Demo 3.
+
+No.~A view adds a permanent schema object, which pays off when logic is
+reused across many queries or sessions. For a one-off or occasional
+analysis, a CTE is simpler and leaves nothing behind to maintain.
+
+\textbf{Question 8}
+
+sql\_query\_8 \textless- ``WITH student\_avg AS ( SELECT StudentID,
+AVG(Grade) AS average\_grade FROM ENROLLMENT GROUP BY StudentID HAVING
+AVG(Grade) \textgreater= 85 ) SELECT s.StudentID, s.Name, s.Major,
+sa.average\_grade FROM student\_avg sa JOIN STUDENT s ON s.StudentID =
+sa.StudentID ORDER BY sa.average\_grade DESC;''
+
+The CTE separates the aggregation and filtering step (average grade,
+keep only ≥ 85) from the join to STUDENT. The query reads in the same
+order as the problem's steps. The join also only touches the
+already-reduced set of successful students instead of mixing GROUP
+BY/HAVING with the join logic.
+
+\end{document}
